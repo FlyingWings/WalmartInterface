@@ -3,4 +3,3 @@
 composer.lock
 composer.phar
 /log/*
-secret_config.php
