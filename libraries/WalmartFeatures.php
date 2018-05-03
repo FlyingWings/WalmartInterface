@@ -9,7 +9,6 @@
 namespace libraries;
 
 use GuzzleHttp\Client;
-
 class WalmartFeatures {
     protected static $api_url = "https://marketplace.walmartapis.com";
     protected static $api_test_url = "https://developer.walmart.com/proxy/item-api-doc-app/rest";
@@ -24,8 +23,26 @@ class WalmartFeatures {
      */
     public static function getAllFeedStatus($seller){
         $url = self::$api_url;
-        $params = ["offset"=>0, "limit"=>50];
+        $params = ["offset"=>0, "limit"=>5];
         $xml = self::_call_api_get($seller, $url."/v3/feeds", $params);
+        $res = self::xml_to_obj($xml);
+        return $res;
+    }
+
+
+    /**
+     * GET items' detail for a single feed
+     * @param $seller
+     * @param $feedId
+     * @param string $includeDetails
+     * @param null $offset
+     * @param null $limit
+     * @return mixed
+     */
+    public static function getFeedItemsStatus($seller, $feedId, $includeDetails = "true", $offset=null, $limit= null){
+        $url = self::$api_url;
+        $params = $offset === null ? ["includeDetails"=>$includeDetails] : ["includeDetails"=>$includeDetails, "offset"=>$offset, "limit"=>$limit];
+        $xml = self::_call_api_get($seller, $url."/v3/feeds/".$feedId, $params);
         $res = self::xml_to_obj($xml);
         return $res;
     }
@@ -61,11 +78,18 @@ class WalmartFeatures {
 
         $client = new Client();
         $headers= self::generate_headers($seller, $final_url, $time, "GET");
-        $xml=$client->request("GET", $final_url, [
-            'headers'=>$headers
-        ]);
 
-        $xml = $xml->getBody()->getContents();
+
+        try {
+            $xml=$client->request("GET", $final_url, [
+                'headers'=>$headers
+            ]);
+            $xml = $xml->getBody()->getContents();
+
+        }catch(\GuzzleHttp\Exception\ClientException $e){
+            $response = $e->getResponse();
+            $xml = $response->getBody()->getContents();
+        }
 
         self::_log_response($logid, $xml, $url);
 

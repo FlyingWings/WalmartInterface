@@ -12,5 +12,7 @@ require_once("secret_config.php");// All the configuration, including declaratio
 
 
 $wal_account = new libraries\WalmartAccount($config_array);
-$res = libraries\WalmartFeatures::getAllFeedStatus($wal_account);
-var_dump($res);exit;
+
+$res = libraries\WalmartFeatures::getFeedItemsStatus($wal_account, "fdsfasdfds");
+var_dump($res);
+exit;

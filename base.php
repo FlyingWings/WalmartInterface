@@ -20,6 +20,11 @@ function load_files($directory){
     return [];
 }
 
+function dd(){
+    array_map("var_dump", func_get_args());
+    exit;
+}
+
 define("ROOT", __DIR__);
 define("LIBRARY", ROOT. DIRECTORY_SEPARATOR. "libraries");
 
