@@ -6,8 +6,8 @@
  * Time: 下午6:05
  */
 
-include_once("../base.php");
-include_once("../secret_config.php");
+
+include_once(dirname(__DIR__)."/base.php");
 
 use PHPUnit\Framework\TestCase;
 
