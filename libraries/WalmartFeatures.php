@@ -91,6 +91,29 @@ class WalmartFeatures {
     }
 
 
+    public static function updateInventory($seller, $item){
+        $url = self::$api_url;
+        $xml = self::_call_api_put($seller, $url."/v2/inventory?sku=".$item->sku, self::generateInventoryFile($seller, $item));
+        $res = self::xml_to_obj($xml);
+        return $res;
+
+    }
+
+
+    /**
+     * Retire an item
+     * @param $seller
+     * @param $item
+     * @return mixed
+     */
+    public static function retireAnItem($seller, $item){
+        $url = self::$api_url;
+        $xml = self::_call_api_detele($seller, $url."/v3/items/".$item->sku);
+        $res = self::xml_to_obj($xml);
+        return $res;
+    }
+
+
 
 
     /**
@@ -142,7 +165,70 @@ class WalmartFeatures {
         return $xml;
     }
 
+    /**
+     * PUT method
+     * @param $seller
+     * @param $url
+     * @param $params
+     * @return mixed|\Psr\Http\Message\ResponseInterface
+     */
+    public static function _call_api_put($seller, $url, $params){
+        $logid=self::_log_request($seller->shop_name, $seller->id, $url, []);
+        $time = intval(round(microtime(true) * 1000));
 
+        $client = new Client();
+        $headers= self::generate_headers($seller, $url, $time, "PUT", ['Content-Type'=> 'application/xml']);// Directly request in body, set content-type to xml(fixed)
+        try{
+            $res = $client->request("PUT", $url, [
+                'headers'=>$headers,
+                'body'=>$params
+            ]);
+
+            $xml = $res->getBody()->getContents();
+
+        }catch(\GuzzleHttp\Exception\ClientException $e){
+            $response = $e->getResponse();
+            $xml = $response->getBody()->getContents();
+        }catch(\GuzzleHttp\Exception\ServerException $e){
+            $response = $e->getResponse();
+            $xml = $response->getBody()->getContents();
+        }
+
+        self::_log_response($logid, $xml, $url);
+
+        return $xml;
+    }
+
+    /**
+     * DELETE
+     * @param $seller
+     * @param $url
+     * @return mixed
+     */
+    protected static function _call_api_detele($seller, $url)
+    {
+        $logid = self::_log_request($seller->get("shop_name"), $seller->id, $url, []);
+        $client = new Client();
+
+        $time = intval(round(microtime(true) * 1000));
+        $headers= self::generate_headers($seller, $url, $time, "DELETE");
+        try{
+            $res = $client->request("DELETE", $url, [
+                'headers'=>$headers
+            ]);
+            $xml = $res->getBody()->getContents();
+        }catch(\GuzzleHttp\Exception\ServerException $e){
+            $response = $e->getResponse();
+            $xml = $response->getBody()->getContents();
+        }catch(\GuzzleHttp\Exception\ClientException $e){
+            $response = $e->getResponse();
+            $xml = $response->getBody()->getContents();
+        }
+
+        self::_log_response($logid, $xml, $url);
+
+        return $xml;
+    }
     private static function generate_headers(WalmartAccount $seller, $url, $time, $method, $other_header=[]){
         $signature = $seller->get_signature($url, $method, $time);
         if($signature === null){
@@ -214,6 +300,21 @@ class WalmartFeatures {
         return json_decode(json_encode(simplexml_load_string($res), 1));
     }
 
+
+    public static function generateInventoryFile($seller, $item){
+        $content = <<<ITEM
+<?xml version="1.0" encoding="UTF-8"?>
+<inventory xmlns="http://walmart.com/">
+    <sku>{$item->sku}</sku>
+    <quantity>
+        <unit>EACH</unit>
+        <amount>{$item->qty}</amount>
+    </quantity>
+    <fulfillmentLagTime>{$item->lag_time}</fulfillmentLagTime>
+</inventory>
+ITEM;
+        return $content;
+    }
 
     public static function generateItemFeedFile($seller, $items, $process_type = "ALL"){
         $request_id = sha1(microtime());

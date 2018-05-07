@@ -42,7 +42,8 @@ class WalmartFeaturesGetTest extends TestCase{
         $feedId = "tafdsfasf";// A random-assigned feed id
         $res = \libraries\WalmartFeatures::getFeedItemsStatus($account, $feedId);
         $this->assertObjectHasAttribute("error", $res);// If having it, means meeting an error
-        $feedId = '41B86C7F95AD40C98E9423912A8DBDA4@AQMBAQA';// An Real Feed id
+        global $legal_feed_id;
+        $feedId = $legal_feed_id;// An Real Feed id
         $res = \libraries\WalmartFeatures::getFeedItemsStatus($account, $feedId);
         $this->assertObjectNotHasAttribute("error", $res);// If having it, means meeting an error
         $this->assertObjectHasAttribute("feedStatus", $res);
@@ -57,7 +58,8 @@ class WalmartFeaturesGetTest extends TestCase{
         $sku = "Random-Assign-1";// Illegal SKU
         $res = \libraries\WalmartFeatures::getAnItem($account, $sku);
         $this->assertObjectHasAttribute("error", $res);
-        $sku = "MAN-AB-120x60";// legal SKU
+        global $legal_sku;
+        $sku = $legal_sku;// legal SKU
         $res = \libraries\WalmartFeatures::getAnItem($account, $sku);
         $this->assertObjectHasAttribute("ItemResponse", $res);
         $this->assertObjectNotHasAttribute("error", $res);

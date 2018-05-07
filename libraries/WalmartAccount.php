@@ -29,6 +29,10 @@ class WalmartAccount {
         $this->$name = $value;
     }
 
+    public function get($key){
+        return $this->$key;
+    }
+
 
     protected function _GetWalmartAuthSignature($URL, $RequestMethod, $Timestamp) {
         $WalmartConsumerID = $this->customer_id;//Your Walmart Private Key;

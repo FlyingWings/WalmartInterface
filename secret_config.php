@@ -9,3 +9,8 @@ $config_array = [
     'id'=>'random-value',
     'shop_name'=>"example-shop-name"
 ];
+
+$legal_feed_id = "";
+
+$legal_sku = "";// for testing, fill in a sku to post, put, get method
+$legal_sku_to_delete = "";// for testing, fill in a sku to delete method
